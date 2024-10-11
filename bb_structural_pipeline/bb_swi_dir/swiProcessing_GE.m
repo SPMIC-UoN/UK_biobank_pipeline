@@ -27,7 +27,7 @@ function swiProcessing(dirName)
   magImgDir=[dirName '/SWI/'];
   phaImgDir=[dirName '/SWI/'];
 
-  magImgFiles=dir([magImgDir 'SWI_TOTAL_MAG_TE2.nii.gz']); 
+  magImgFiles=dir([magImgDir 'SWI_TOTAL_MAG_TE2.nii.gz']);
   phaImgFiles=dir([phaImgDir 'SWI_TOTAL_PHA_TE2.nii.gz']); %For GE this is filtered phase
 
   %chaDim = size(magImgFiles,1)-2;
@@ -44,17 +44,17 @@ function swiProcessing(dirName)
   filterLP = zeros(xDim,yDim);
   filterLP(xDim/2+1-96/2:xDim/2+1+96/2,yDim/2+1-96/2:yDim/2+1+96/2) = w;
 
-  SOSImg = zeros(xDim,yDim,zDim);
-  complexAvg = complex(zeros(xDim,yDim,zDim),zeros(xDim,yDim,zDim));
+  %SOSImg = zeros(xDim,yDim,zDim);
+  %complexAvg = complex(zeros(xDim,yDim,zDim),zeros(xDim,yDim,zDim));
 
   %% loop over channels (NOT looping for non-siemens scanners so for loop removed)
 
   magImgFileName = [magImgDir,magImgFiles.name];
   phaImgFileName = [phaImgDir,phaImgFiles.name];
   magImg = read_avw(magImgFileName);
-  unix(['${FSLDIR}/bin/fslmaths ' phaImgDir '/SWI_TOTAL_PHA_TE2.nii.gz -div 1000 ' phaImgDir '/SWI_TOTAL_PHA_TE2.nii.gz ']); %before reading in scale the intensity
+  %unix(['${FSLDIR}/bin/fslmaths ' phaImgDir '/SWI_TOTAL_PHA_TE2.nii.gz -div 1000 ' phaImgDir '/SWI_TOTAL_PHA_TE2.nii.gz ']); %before reading in scale the intensity
   phaImg = read_avw(phaImgFileName);
-  
+
   %phaImg = -pi*(phaImg - 2048)/2048;
   %phaImg = -pi*(phaImg - 1048)/1048
 
@@ -67,17 +67,17 @@ function swiProcessing(dirName)
   %unix(['${FSLDIR}/bin/prelude -c ' subj_dir '/SWI/complexImg_tmp.nii.gz -u complexImg.nii.gz '])
   %complexImgFileName = [dirName,'/SWI/complexImg_tmp.nii.gz'];
   %complexImg = read_avw(complexImgFileName);
-%   phaseHP = zeros(xDim,yDim,zDim);
-%     for zInd = 1:zDim
-%       complexFFT = fftshift(fft2(ifftshift(complexImg(:,:,zInd))));
-%       complexFFT = complexFFT.*filterLP;
-%       complexImgLP = fftshift(ifft2(ifftshift(complexFFT)));
-%       phaseHP(:,:,zInd) = angle(complexImg(:,:,zInd).*conj(complexImgLP));
-%     end
-%   complexAvg = magImg.*exp(1i*phaseHP);
+   phaseHP = zeros(xDim,yDim,zDim);
+     for zInd = 1:zDim
+       complexFFT = fftshift(fft2(ifftshift(complexImg(:,:,zInd))));
+       complexFFT = complexFFT.*filterLP;
+       complexImgLP = fftshift(ifft2(ifftshift(complexFFT)));
+       phaseHP(:,:,zInd) = angle(complexImg(:,:,zInd).*conj(complexImgLP));
+     end
+   complexAvg = magImg.*exp(1i*phaseHP);
 
-  SOSImg = SOSImg.^0.5;
-  filteredPha = phaImg;
+  %SOSImg = SOSImg.^0.5;
+  filteredPha = angle(complexAvg);
 
   maskSWI = zeros(xDim,yDim,zDim);
   maskSWI(filteredPha>0) = 1;

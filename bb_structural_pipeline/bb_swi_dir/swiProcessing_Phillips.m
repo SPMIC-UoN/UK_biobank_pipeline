@@ -53,8 +53,9 @@ function swiProcessing(dirName)
   phaImgFileName = [phaImgDir,phaImgFiles.name];
   magImg = read_avw(magImgFileName);
   phaImg = read_avw(phaImgFileName);
+  phaImg = phaImg/1000;
   %phaImg = -pi*(phaImg - 2048)/2048;
-  phaImg = -pi*(phaImg - 1571)/1571;
+  %phaImg = -pi*(phaImg - 1571)/1571;
 
   complexImg = magImg .* exp(1i*phaImg); %
   phase1 = angle(complexImg);
